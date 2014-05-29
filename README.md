@@ -1,1 +1,1 @@
-A simple authentication example
+A simple Node.js authentication example
