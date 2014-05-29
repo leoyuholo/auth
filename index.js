@@ -2,6 +2,10 @@ var auth = require('./auth.js'),
 	app = require('express')();
 
 app.get('/', function(req, res) {
+	res.sendfile('./index.html');
+})
+
+app.get('/list', function(req, res) {
 	var obj = auth.list();
 	res.send(obj);
 });
