@@ -11,6 +11,16 @@ app.get('/create/:id/:pw', function(req, res) {
 	res.send(obj);
 });
 
+app.get('/login/:id/:pw', function(req, res) {
+	var obj = auth.login(req.params.id, req.params.pw);
+	res.send(obj);
+});
+
+app.get('/logout/:id/:token', function(req, res) {
+	var obj = auth.logout(req.params.id, req.params.token);
+	res.send(obj);
+});
+
 var port = 8080;
 app.listen(port);
 
