@@ -7,13 +7,26 @@
 		<div class="page-wrapper">
 			<h3>Sign Up</h3>
 			<input type="button" id="create-submit" value="Create">
+			<h3>Sign In</h3>
+			<input type="button" id="login-submit" value="Login">
+			<h3>Sign Out</h3>
+			<input type="button" id="logout-submit" value="Logout">
 		</div>
 	</body>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script type="text/javascript" src="auth_web.js"></script>
 	<script type="text/javascript">
+		var id = 'alice',
+			pw = '123',
+			token = '';
 		$('#create-submit').click(function() {
-			auth.create('alice', '123', function(data){console.log(data)}, function(data){console.log(data)});
+			auth.create(id, pw, function(data){console.log(data)}, function(data){console.log(data)});
+		});
+		$('#login-submit').click(function() {
+			auth.login(id, pw, function(data){console.log(data);token=data.token}, function(data){console.log(data)});
+		});
+		$('#logout-submit').click(function() {
+			auth.logout(id, token, function(data){console.log(data)}, function(data){console.log(data)});
 		});
 	</script>
 </html>
