@@ -14,11 +14,15 @@ var postAjax = function(url, payload, onSuccess, onFail) {
 	$.post(url, payload, processRes(onSuccess, onFail));
 }
 
+var sha1 = function(data) {
+	return CryptoJS.SHA1(data).toString();
+}
+
 auth = {
 
 	create: function(id, pw, onSuccess, onFail) {
 		if (id && pw) {
-			postAjax('/create', {id: id, pw: pw}, onSuccess, onFail);
+			postAjax('/create', {id: id, pw: sha1(pw)}, onSuccess, onFail);
 		} else {
 			onFail({msg: 'Empty ID or password.'});
 		}
@@ -26,7 +30,7 @@ auth = {
 
 	login: function(id, pw, onSuccess, onFail) {
 		if (id && pw) {
-			postAjax('/login', {id: id, pw: pw}, onSuccess, onFail);
+			postAjax('/login', {id: id, pw: sha1(pw)}, onSuccess, onFail);
 		} else {
 			onFail({msg: 'Empty ID or password.'});
 		}

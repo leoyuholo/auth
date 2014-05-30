@@ -4,14 +4,7 @@ var express = require('express'),
 	app = express();
 
 app.use(bodyParser());
-
-app.get('/', function(req, res) {
-	res.sendfile('./index.html');
-})
-
-app.get('/auth_web.js', function(req, res) {
-	res.sendfile('./auth_web.js');
-})
+app.use(express.static(__dirname));
 
 app.get('/list', function(req, res) {
 	var obj = auth.list();
