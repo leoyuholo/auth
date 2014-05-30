@@ -6,8 +6,13 @@
 	<body id="auth">
 		<div class="page-wrapper">
 			<h3>Sign Up</h3>
+			<input type="text" id="create-id" placeholder="Your ID">
+			<input type="password" id="create-pw" placeholder="Password">
+			<input type="password" id="create-pw2" placeholder="Password again">
 			<input type="button" id="create-submit" value="Create">
 			<h3>Sign In</h3>
+			<input type="text" id="login-id" placeholder="Your ID">
+			<input type="password" id="login-pw" placeholder="Password">
 			<input type="button" id="login-submit" value="Login">
 			<h3>Sign Out</h3>
 			<input type="button" id="logout-submit" value="Logout">
@@ -16,14 +21,22 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script type="text/javascript" src="auth_web.js"></script>
 	<script type="text/javascript">
-		var id = 'alice',
-			pw = '123',
+		var id = '',
 			token = '';
 		$('#create-submit').click(function() {
-			auth.create(id, pw, function(data){console.log(data)}, function(data){console.log(data)});
+			id = $('#create-id')[0].value;
+			var pw = $('#create-pw')[0].value,
+				pw2 = $('#create-pw2')[0].value;
+			if (pw === pw2) {
+				auth.create(id, pw, function(data){console.log(data)}, function(data){console.log(data)});
+			} else {
+				console.log('Inconsistent password.');
+			}
 		});
 		$('#login-submit').click(function() {
-			auth.login(id, pw, function(data){console.log(data);token=data.token}, function(data){console.log(data)});
+			id = $('#login-id')[0].value;
+			var pw = $('#login-pw')[0].value;
+			auth.login(id, pw, function(data){console.log(data);token=data.token}, function(data){console.log(data);token=''});
 		});
 		$('#logout-submit').click(function() {
 			auth.logout(id, token, function(data){console.log(data)}, function(data){console.log(data)});
