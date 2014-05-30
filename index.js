@@ -36,4 +36,4 @@ app.post('/logout', function(req, res) {
 var port = 8080;
 app.listen(port);
 
-console.log('app running on port:', port);
+console.log('auth running on port:', port);

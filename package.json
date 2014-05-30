@@ -1,6 +1,6 @@
 {
 	"name": "auth",
-	"description": "simple authentication example",
+	"description": "A simple Node.js authentication example",
 	"author": "Leo Yu Ho, Lo <leoyuholo@gmail.com>",
 	"version": "0.0.1",
 	"dependencies": {
