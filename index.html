@@ -1,3 +1,19 @@
 <html>
-auth
+	<head>
+		<meta charset="utf-8">
+		<title>auth</title>
+	</head>
+	<body id="auth">
+		<div class="page-wrapper">
+			<h3>Sign Up</h3>
+			<input type="button" id="create-submit" value="Create">
+		</div>
+	</body>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script type="text/javascript" src="auth_web.js"></script>
+	<script type="text/javascript">
+		$('#create-submit').click(function() {
+			auth.create('alice', '123', function(data){console.log(data)}, function(data){console.log(data)});
+		});
+	</script>
 </html>

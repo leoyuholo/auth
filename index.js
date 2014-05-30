@@ -5,6 +5,10 @@ app.get('/', function(req, res) {
 	res.sendfile('./index.html');
 })
 
+app.get('/auth_web.js', function(req, res) {
+	res.sendfile('./auth_web.js');
+})
+
 app.get('/list', function(req, res) {
 	var obj = auth.list();
 	res.send(obj);

@@ -2,7 +2,7 @@ var users = {};
 
 function add(id, pw) {
 	users[id] = {id: id, pw: pw, token: ''};
-	return {result: true, id: id};
+	return true;
 };
 
 function list() {
@@ -17,13 +17,17 @@ function find(id) {
 	return users[id];
 };
 
+function resHelper(result, payload) {
+	return {result: result, payload: payload};
+}
+
 module.exports = {
 
 	create: function(id, pw) {
 		if (find(id)) {
-			return {result: false, msg: 'ID exists.'};
+			return resHelper(false, {msg: 'ID exists.'});
 		} else {
-			return add(id, pw);
+			return add(id, pw) ? resHelper(true, {id: id}) : resHelper(false);
 		}
 	},
 
@@ -36,17 +40,17 @@ module.exports = {
 		if (user && user.pw === pw) {
 			var token = Math.random().toString().slice(2);
 			user.token = token;
-			return {result: true, token:token};
+			return resHelper(true, {token:token});
 		}
-		return {result: false, msg: 'Login failed.'};
+		return resHelper(false, {msg: 'Login failed.'});
 	},
 
 	logout: function(id, token) {
 		var user = find(id);
 		if (user && user.token === token) {
 			user.token = '';
-			return {result: true};
+			return resHelper(true);
 		}
-		return {result: false, msg: 'Logout failed.'};
+		return resHelper(false, {msg: 'Logout failed.'});
 	}
 }
