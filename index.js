@@ -1,5 +1,9 @@
-var auth = require('./auth.js'),
-	app = require('express')();
+var express = require('express'),
+	bodyParser = require('body-parser'),
+	auth = require('./auth.js'),
+	app = express();
+
+app.use(bodyParser());
 
 app.get('/', function(req, res) {
 	res.sendfile('./index.html');
@@ -14,18 +18,18 @@ app.get('/list', function(req, res) {
 	res.send(obj);
 });
 
-app.get('/create/:id/:pw', function(req, res) {
-	var obj = auth.create(req.params.id, req.params.pw);
+app.post('/create', function(req, res) {
+	var obj = auth.create(req.param('id'), req.param('pw'));
 	res.send(obj);
 });
 
-app.get('/login/:id/:pw', function(req, res) {
-	var obj = auth.login(req.params.id, req.params.pw);
+app.post('/login', function(req, res) {
+	var obj = auth.login(req.param('id'), req.param('pw'));
 	res.send(obj);
 });
 
-app.get('/logout/:id/:token', function(req, res) {
-	var obj = auth.logout(req.params.id, req.params.token);
+app.post('/logout', function(req, res) {
+	var obj = auth.logout(req.param('id'), req.param('token'));
 	res.send(obj);
 });
 
