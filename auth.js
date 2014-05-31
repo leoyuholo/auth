@@ -1,3 +1,6 @@
+crypto = require('crypto');
+aes = require('crypto-js/aes');
+
 var users = {};
 
 function add(id, pw) {
@@ -35,9 +38,25 @@ module.exports = {
 		return list();
 	},
 
+	loginchallenge: function(id) {
+		var user = find(id);
+		if (!user) {
+			return resHelper(false, {msg: 'ID not exists.'});
+		}
+
+		if (!(user.challenge && user.salt)) {
+			user.secret = Math.random().toString().slice(2);
+			user.salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32);
+			var aesKey = crypto.createHash('sha1').update(user.pw + user.salt).digest('hex');
+			user.challenge = aes.encrypt(user.secret, aesKey).toString();
+		}
+
+		return resHelper(true, {challenge: user.challenge, salt: user.salt});
+	},
+
 	login: function(id, pw) {
 		var user = find(id);
-		if (user && user.pw === pw) {
+		if (user && user.secret === pw) {
 			var token = Math.random().toString().slice(2);
 			user.token = token;
 			return resHelper(true, {token:token});

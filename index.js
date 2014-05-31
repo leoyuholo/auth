@@ -16,6 +16,11 @@ app.post('/create', function(req, res) {
 	res.send(obj);
 });
 
+app.get('/loginchallenge', function(req, res) {
+	var obj = auth.loginchallenge(req.param('id'));
+	res.send(obj);
+});
+
 app.post('/login', function(req, res) {
 	var obj = auth.login(req.param('id'), req.param('pw'));
 	res.send(obj);
