@@ -1,10 +1,34 @@
 var crypto = require('crypto'),
-	aes = require('crypto-js/aes');
+	aes = require('crypto-js/aes'),
+	fs = require('fs');
 
 var users = {};
 
+function loadDB() {
+	fs.readFile('./userdb.json', {encoding: 'utf-8'}, function (err, data) {
+		if (err) throw err;
+		if (data) users = JSON.parse(data);
+	});
+};
+
+function saveDB() {
+	var data = {}
+	for (var id in users) {
+		var user = users[id];
+		data[user.id] = {
+			id: user.id,
+			pw: user.pw,
+			salt: user.salt
+		}
+	}
+	fs.writeFile('./userdb.json', JSON.stringify(data), function (err) {
+		if (err) throw err;
+	});
+}
+
 function add(id, pw, salt) {
 	users[id] = {id: id, pw: pw, salt: salt, token: ''};
+	saveDB();
 	return true;
 };
 
@@ -72,3 +96,5 @@ module.exports = {
 		return resHelper(false, {msg: 'Logout failed.'});
 	}
 }
+
+loadDB();
