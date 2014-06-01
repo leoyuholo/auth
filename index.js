@@ -1,10 +1,11 @@
 var express = require('express'),
 	bodyParser = require('body-parser'),
+	path = require('path'),
 	auth = require('./auth.js'),
 	app = express();
 
 app.use(bodyParser());
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname + '/www')));
 
 app.get('/list', function(req, res) {
 	var obj = auth.list();
