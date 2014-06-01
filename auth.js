@@ -81,6 +81,7 @@ module.exports = {
 	login: function(id, secret) {
 		var user = find(id);
 		if (user && user.secret === secret) {
+			user.challenge = '';
 			user.token = Math.random().toString().slice(2);
 			return resHelper(true, {token:user.token});
 		}
