@@ -1,5 +1,5 @@
-crypto = require('crypto');
-aes = require('crypto-js/aes');
+var crypto = require('crypto'),
+	aes = require('crypto-js/aes');
 
 var users = {};
 
