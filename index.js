@@ -22,7 +22,7 @@ app.get('/loginchallenge', function(req, res) {
 });
 
 app.post('/login', function(req, res) {
-	var obj = auth.login(req.param('id'), req.param('pw'));
+	var obj = auth.login(req.param('id'), req.param('secret'));
 	res.send(obj);
 });
 
