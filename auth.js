@@ -12,12 +12,12 @@ function loadDB() {
 };
 
 function saveDB() {
-	var data = {}
+	var data = {};
 	for (var id in users) {
 		var user = users[id];
 		data[user.id] = {
 			id: user.id,
-			pw: user.pw,
+			key: user.key,
 			salt: user.salt
 		}
 	}
@@ -26,8 +26,10 @@ function saveDB() {
 	});
 }
 
-function add(id, pw, salt) {
-	users[id] = {id: id, pw: pw, salt: salt, token: ''};
+function add(id, pw) {
+	var salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32),
+		key = crypto.createHash('sha1').update(pw + salt).digest('hex');
+	users[id] = {id: id, key: key, salt: salt, token: ''};
 	saveDB();
 	return true;
 };
@@ -54,9 +56,7 @@ module.exports = {
 		if (find(id)) {
 			return resHelper(false, {msg: 'ID exists.'});
 		} else {
-			var salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32),
-				pw = crypto.createHash('sha1').update(pw + salt).digest('hex');
-			return add(id, pw, salt) ? resHelper(true, {id: id}) : resHelper(false);
+			return add(id, pw) ? resHelper(true, {id: id}) : resHelper(false);
 		}
 	},
 
@@ -72,7 +72,7 @@ module.exports = {
 
 		if (!user.challenge) {
 			user.secret = Math.random().toString().slice(2);
-			user.challenge = aes.encrypt(user.secret, user.pw).toString();
+			user.challenge = aes.encrypt(user.secret, user.key).toString();
 		}
 
 		return resHelper(true, {challenge: user.challenge, salt: user.salt});
