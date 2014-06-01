@@ -41,8 +41,14 @@ auth = {
 	login: function(id, pw, onSuccess, onFail) {
 		if (id && pw) {
 			urlAjax('/loginchallenge?id=' + id, function(data) {
-				var aesKey = sha1(sha1(pw) + data.salt);
-				postAjax('/login', {id: id, secret: aesDecrypt(data.challenge, aesKey).toString(CryptoJS.enc.Utf8)}, onSuccess, onFail);
+				var secret = '',
+					aesKey = sha1(sha1(pw) + data.salt);
+				try {
+					secret = aesDecrypt(data.challenge, aesKey).toString(CryptoJS.enc.Utf8);
+				} catch (err) {
+					onFail({msg: 'Login failed.'});
+				}
+				postAjax('/login', {id: id, secret: secret}, onSuccess, onFail);
 			}, onFail);
 		} else {
 			onFail({msg: 'Empty ID or password.'});
