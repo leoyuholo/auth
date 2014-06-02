@@ -1,6 +1,11 @@
 var expect = chai.expect;
 
-var reset = function () {
+function urlAjax(url, onSuccess, onFail) {
+	$.ajax(url).done(processRes(onSuccess, onFail));
+}
+
+function reset() {
+
 	before(function (done) {
 		urlAjax('/reset', done, function () {
 			expect('this callback should not be called').to.be.not.ok;

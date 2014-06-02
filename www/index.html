@@ -32,44 +32,79 @@
 		</div>
 	</body>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="components/CryptoJS/rollups/aes.js"></script>
-    <script src="components/CryptoJS/components/core-min.js"></script>
+	<script src="components/CryptoJS/rollups/aes.js"></script>
+	<script src="components/CryptoJS/components/core-min.js"></script>
 	<script src="components/CryptoJS/components/sha1-min.js"></script>
 	<script type="text/javascript" src="auth_web.js"></script>
 	<script type="text/javascript">
 		var id = '',
 			token = '';
-		$('#create-submit').click(function() {
+
+		$('#create-submit').click(function () {
 			id = $('#create-id')[0].value;
 			var pw = $('#create-pw')[0].value,
 				pw2 = $('#create-pw2')[0].value;
+
 			if (pw === pw2) {
-				auth.create(id, pw, function(data){console.log(data)}, function(data){console.log(data)});
+				auth.create(id, pw, function (data) {
+					console.log(data)
+				}, function (data) {
+					console.log(data)
+				});
 			} else {
 				console.log('Inconsistent password.');
 			}
 		});
-		$('#login-submit').click(function() {
+
+		$('#login-submit').click(function () {
 			id = $('#login-id')[0].value;
 			var pw = $('#login-pw')[0].value;
-			auth.login(id, pw, function(data){console.log(data);token=data.token}, function(data){console.log(data);token=''});
+
+			auth.login(id, pw, function (data) {
+				token = data.token;
+				console.log(data);
+			}, function (data) {
+				token = '';
+				console.log(data);
+			});
 		});
-		$('#update-submit').click(function() {
+
+		$('#update-submit').click(function () {
 			var id = $('#update-id')[0].value,
 				pw = $('#update-pw')[0].value,
 				newId = $('#update-newId')[0].value,
 				newPw = $('#update-newPw')[0].value,
 				newPw2 = $('#update-newPw2')[0].value;
-			if (id && pw && newId && newPw && newPw === newPw2)
-				auth.update(id, pw, newId, newPw, function(data){console.log(data);token=data.token}, function(data){console.log(data);token=''});
+
+			if (id && pw && newId && newPw && newPw === newPw2) {
+				auth.update(id, pw, newId, newPw, function (data) {
+					token = data.token;
+					console.log(data);
+				}, function (data) {
+					token = '';
+					console.log(data);
+				});
+			}
 		});
-		$('#logout-submit').click(function() {
-			auth.logout(id, token, function(data){console.log(data)}, function(data){console.log(data)});
+
+		$('#logout-submit').click(function () {
+
+			auth.logout(id, token, function (data) {
+				console.log(data)
+			}, function (data) {
+				console.log(data)
+			});
 		});
-		$('#delete-submit').click(function() {
+
+		$('#delete-submit').click(function () {
 			id = $('#delete-id')[0].value;
 			var pw = $('#delete-pw')[0].value;
-			auth.delete(id, pw, function(data){console.log(data);}, function(data){console.log(data);});
+
+			auth.delete(id, pw, function (data) {
+				console.log(data);
+			}, function (data) {
+				console.log(data);
+			});
 		});
 	</script>
 </html>

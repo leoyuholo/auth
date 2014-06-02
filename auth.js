@@ -5,6 +5,7 @@ var crypto = require('crypto'),
 var users = {};
 
 function loadDB() {
+
 	fs.readFile('./userdb.json', {encoding: 'utf-8'}, function (err, data) {
 		if (err) throw err;
 		if (data) users = JSON.parse(data);
@@ -13,6 +14,7 @@ function loadDB() {
 
 function saveDB() {
 	var data = {};
+
 	for (var id in users) {
 		var user = users[id];
 		data[user.id] = {
@@ -21,6 +23,7 @@ function saveDB() {
 			salt: user.salt
 		}
 	}
+
 	fs.writeFile('./userdb.json', JSON.stringify(data), function (err) {
 		if (err) throw err;
 	});
@@ -29,17 +32,22 @@ function saveDB() {
 function genKey(pw) {
 	var salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32),
 		key = crypto.createHash('sha1').update(pw + salt).digest('hex');
+
 	return {key: key, salt: salt};
 }
 
 function add(id, pw) {
 	var key = genKey(pw);
+
 	users[id] = {id: id, key: key.key, salt: key.salt, token: ''};
+
 	saveDB();
+
 	return true;
 };
 
 function modify(user, newId, newPw) {
+
 	if (newId !== user.id) {
 		delete users[user.id];
 		user.id = newId;
@@ -49,19 +57,23 @@ function modify(user, newId, newPw) {
 	var key = genKey(newPw);
 	user.key = key.key;
 	user.salt = key.salt;
+
 	saveDB();
 };
 
 function remove(user) {
+
 	delete users[user.id];
 	saveDB();
 }
 
 function list() {
 	var list = [];
+
 	for (id in users) {
 		list.push(users[id]);
 	}
+
 	return list;
 };
 
@@ -71,13 +83,24 @@ function find(id) {
 
 function findAndCheck(id, secret) {
 	var user = find(id);
+
 	if (user && user.secret === secret) {
 		user.challenge = '';
-		user.token = Math.random().toString().slice(2);
 		return user;
 	} else {
 		return false;
 	}
+}
+
+function genToken() {
+	return Math.random().toString().slice(2);
+}
+
+function findCheckGenToken(id, secret) {
+	var user = findAndCheck(id, secret);
+
+	user.token = genToken();
+	return user;
 }
 
 function resHelper(result, payload) {
@@ -86,22 +109,25 @@ function resHelper(result, payload) {
 
 module.exports = {
 
-	reset: function() {
+	reset: function () {
+
 		users = {};
 		saveDB();
+
 		return resHelper(true);
 	},
 
-	create: function(id, pw) {
-		if (find(id)) {
+	create: function (id, pw) {
+
+		if (find(id))
 			return resHelper(false, {msg: 'ID exists.'});
-		} else {
+		else
 			return add(id, pw) ? resHelper(true, {id: id}) : resHelper(false);
-		}
 	},
 
 	update: function (id, secret, newId, newPw) {
-		var user = findAndCheck(id, secret);
+		var user = findCheckGenToken(id, secret);
+
 		if (user) {
 			modify(user, newId, newPw);
 			return resHelper(true, {id: user.id, token: user.token});
@@ -110,20 +136,22 @@ module.exports = {
 		}
 	},
 
-	delete: function(id, secret) {
+	delete: function (id, secret) {
 		var user = findAndCheck(id, secret);
+
 		if (user) {
 			remove(user);
 			return resHelper(true);
 		}
+
 		return resHelper(false, {msg: 'User not exist or incorrect password.'});
 	},
 
-	list: function() {
+	list: function () {
 		return list();
 	},
 
-	loginchallenge: function(id) {
+	loginchallenge: function (id) {
 		var user = find(id);
 		if (!user) {
 			return resHelper(false, {msg: 'ID not exists.'});
@@ -137,15 +165,15 @@ module.exports = {
 		return resHelper(true, {challenge: user.challenge, salt: user.salt});
 	},
 
-	login: function(id, secret) {
-		var user = findAndCheck(id, secret);
+	login: function (id, secret) {
+		var user = findCheckGenToken(id, secret);
 		if (user) {
 			return resHelper(true, {id: user.id, token: user.token});
 		}
 		return resHelper(false, {msg: 'Login failed.'});
 	},
 
-	logout: function(id, token) {
+	logout: function (id, token) {
 		var user = find(id);
 		if (user && user.token && user.token === token) {
 			user.token = '';
