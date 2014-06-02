@@ -49,6 +49,12 @@ function modify(user, newId, newPw) {
 	var key = genKey(newPw);
 	user.key = key.key;
 	user.salt = key.salt;
+};
+
+function remove(user) {
+	delete users[user.id];
+	console.log(users);
+	saveDB();
 }
 
 function list() {
@@ -94,8 +100,17 @@ module.exports = {
 			modify(user, newId, newPw);
 			return resHelper(true, {id: user.id, token: user.token});
 		} else {
-			return resHelper(false, {msg: 'Incorrect password.'});
+			return resHelper(false, {msg: 'User not exist or incorrect password.'});
 		}
+	},
+
+	delete: function(id, secret) {
+		var user = findAndCheck(id, secret);
+		if (user) {
+			remove(user);
+			return resHelper(true);
+		}
+		return resHelper(false, {msg: 'User not exist or incorrect password.'});
 	},
 
 	list: function() {

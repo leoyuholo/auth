@@ -22,6 +22,11 @@ app.post('/update', function(req, res) {
 	res.send(obj);
 });
 
+app.post('/delete', function(req, res) {
+	var obj = auth.delete(req.param('id'), req.param('secret'));
+	res.send(obj);
+});
+
 app.get('/loginchallenge', function(req, res) {
 	var obj = auth.loginchallenge(req.param('id'));
 	res.send(obj);

@@ -16,7 +16,7 @@
 			<input type="text" id="login-id" placeholder="Your ID">
 			<input type="password" id="login-pw" placeholder="Password">
 			<input type="button" id="login-submit" value="Login">
-			<h3>Change information</h3>
+			<h3>Change Information</h3>
 			<input type="text" id="update-id" placeholder="Current ID">
 			<input type="password" id="update-pw" placeholder="Current password">
 			<input type="text" id="update-newId" placeholder="New ID">
@@ -25,6 +25,10 @@
 			<input type="button" id="update-submit" value="Change">
 			<h3>Sign Out</h3>
 			<input type="button" id="logout-submit" value="Logout">
+			<h3>Remove Account</h3>
+			<input type="text" id="delete-id" placeholder="Your ID">
+			<input type="password" id="delete-pw" placeholder="Password">
+			<input type="button" id="delete-submit" value="Remove">
 		</div>
 	</body>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -61,6 +65,11 @@
 		});
 		$('#logout-submit').click(function() {
 			auth.logout(id, token, function(data){console.log(data)}, function(data){console.log(data)});
+		});
+		$('#delete-submit').click(function() {
+			id = $('#delete-id')[0].value;
+			var pw = $('#delete-pw')[0].value;
+			auth.delete(id, pw, function(data){console.log(data);}, function(data){console.log(data);});
 		});
 	</script>
 </html>

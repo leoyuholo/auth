@@ -61,6 +61,16 @@ auth = {
 		}
 	},
 
+	delete: function(id, pw, onSuccess, onFail) {
+		if (id && pw) {
+			challengeSecret(id, pw, function(secret) {
+				postAjax('/delete', {id: id, secret: secret}, onSuccess, onFail);
+			}, onFail);
+		} else {
+			onFail({msg: 'Empty ID or password.'});
+		}
+	},
+
 	login: function(id, pw, onSuccess, onFail) {
 		if (id && pw) {
 			challengeSecret(id, pw, function(secret) {
