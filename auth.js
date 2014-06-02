@@ -26,13 +26,30 @@ function saveDB() {
 	});
 }
 
-function add(id, pw) {
+function genKey(pw) {
 	var salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32),
 		key = crypto.createHash('sha1').update(pw + salt).digest('hex');
-	users[id] = {id: id, key: key, salt: salt, token: ''};
+	return {key: key, salt: salt};
+}
+
+function add(id, pw) {
+	var key = genKey(pw);
+	users[id] = {id: id, key: key.key, salt: key.salt, token: ''};
 	saveDB();
 	return true;
 };
+
+function modify(user, newId, newPw) {
+	if (newId !== user.id) {
+		delete users[user.id];
+		user.id = newId;
+		users[newId] = user
+	}
+
+	var key = genKey(newPw);
+	user.key = key.key;
+	user.salt = key.salt;
+}
 
 function list() {
 	var list = [];
@@ -46,6 +63,17 @@ function find(id) {
 	return users[id];
 };
 
+function findAndCheck(id, secret) {
+	var user = find(id);
+	if (user && user.secret === secret) {
+		user.challenge = '';
+		user.token = Math.random().toString().slice(2);
+		return user;
+	} else {
+		return false;
+	}
+}
+
 function resHelper(result, payload) {
 	return {result: result, payload: payload};
 }
@@ -57,6 +85,16 @@ module.exports = {
 			return resHelper(false, {msg: 'ID exists.'});
 		} else {
 			return add(id, pw) ? resHelper(true, {id: id}) : resHelper(false);
+		}
+	},
+
+	update: function (id, secret, newId, newPw) {
+		var user = findAndCheck(id, secret);
+		if (user) {
+			modify(user, newId, newPw);
+			return resHelper(true, {id: user.id, token: user.token});
+		} else {
+			return resHelper(false, {msg: 'Incorrect password.'});
 		}
 	},
 
@@ -79,11 +117,9 @@ module.exports = {
 	},
 
 	login: function(id, secret) {
-		var user = find(id);
-		if (user && user.secret === secret) {
-			user.challenge = '';
-			user.token = Math.random().toString().slice(2);
-			return resHelper(true, {token:user.token});
+		var user = findAndCheck(id, secret);
+		if (user) {
+			return resHelper(true, {id: user.id, token: user.token});
 		}
 		return resHelper(false, {msg: 'Login failed.'});
 	},

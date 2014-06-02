@@ -24,8 +24,21 @@ var sha1 = function(data) {
 	return CryptoJS.SHA1(data).toString();
 }
 
-var aesDecrypt = function(input, key){
+var aesDecrypt = function(input, key) {
 	return CryptoJS.AES.decrypt(input, key);
+}
+
+var challengeSecret = function(id, pw, onSuccess, onFail) {
+	urlAjax('/loginchallenge?id=' + id, function(data) {
+		var secret = '',
+			aesKey = sha1(sha1(pw) + data.salt);
+		try {
+			secret = aesDecrypt(data.challenge, aesKey).toString(CryptoJS.enc.Utf8);
+		} catch (err) {
+			onFail({msg: 'Incorrect password.'});
+		}
+		onSuccess(secret);
+	}, onFail);
 }
 
 auth = {
@@ -38,16 +51,19 @@ auth = {
 		}
 	},
 
+	update: function(id, pw, newId, newPw, onSuccess, onFail) {
+		if (id && pw && newId && newPw) {
+			challengeSecret(id, pw, function(secret) {
+				postAjax('/update', {id: id, secret: secret, newId: newId, newPw: sha1(newPw)}, onSuccess, onFail);
+			}, onFail);
+		} else {
+			onFail({msg: 'Empty (new) ID or (new) password.'});
+		}
+	},
+
 	login: function(id, pw, onSuccess, onFail) {
 		if (id && pw) {
-			urlAjax('/loginchallenge?id=' + id, function(data) {
-				var secret = '',
-					aesKey = sha1(sha1(pw) + data.salt);
-				try {
-					secret = aesDecrypt(data.challenge, aesKey).toString(CryptoJS.enc.Utf8);
-				} catch (err) {
-					onFail({msg: 'Login failed.'});
-				}
+			challengeSecret(id, pw, function(secret) {
 				postAjax('/login', {id: id, secret: secret}, onSuccess, onFail);
 			}, onFail);
 		} else {

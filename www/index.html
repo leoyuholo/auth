@@ -16,6 +16,13 @@
 			<input type="text" id="login-id" placeholder="Your ID">
 			<input type="password" id="login-pw" placeholder="Password">
 			<input type="button" id="login-submit" value="Login">
+			<h3>Change information</h3>
+			<input type="text" id="update-id" placeholder="Current ID">
+			<input type="password" id="update-pw" placeholder="Current password">
+			<input type="text" id="update-newId" placeholder="New ID">
+			<input type="password" id="update-newPw" placeholder="New password">
+			<input type="password" id="update-newPw2" placeholder="New password again">
+			<input type="button" id="update-submit" value="Change">
 			<h3>Sign Out</h3>
 			<input type="button" id="logout-submit" value="Logout">
 		</div>
@@ -42,6 +49,15 @@
 			id = $('#login-id')[0].value;
 			var pw = $('#login-pw')[0].value;
 			auth.login(id, pw, function(data){console.log(data);token=data.token}, function(data){console.log(data);token=''});
+		});
+		$('#update-submit').click(function() {
+			var id = $('#update-id')[0].value,
+				pw = $('#update-pw')[0].value,
+				newId = $('#update-newId')[0].value,
+				newPw = $('#update-newPw')[0].value,
+				newPw2 = $('#update-newPw2')[0].value;
+			if (id && pw && newId && newPw && newPw === newPw2)
+				auth.update(id, pw, newId, newPw, function(data){console.log(data);token=data.token}, function(data){console.log(data);token=''});
 		});
 		$('#logout-submit').click(function() {
 			auth.logout(id, token, function(data){console.log(data)}, function(data){console.log(data)});
