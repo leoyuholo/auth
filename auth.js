@@ -49,6 +49,7 @@ function modify(user, newId, newPw) {
 	var key = genKey(newPw);
 	user.key = key.key;
 	user.salt = key.salt;
+	saveDB();
 };
 
 function remove(user) {
