@@ -1,7 +1,7 @@
 A simple Node.js authentication example
 
 #How to run
-Install [Node.js] (http://nodejs.org/), and run
+Install [Node.js] (http://nodejs.org/), go to project directory and run
 ```
 npm install
 node index.js
