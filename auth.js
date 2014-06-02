@@ -142,9 +142,9 @@ module.exports = {
 		if (user) {
 			remove(user);
 			return resHelper(true);
+		} else {
+			return resHelper(false, {msg: 'User not exist or incorrect password.'});
 		}
-
-		return resHelper(false, {msg: 'User not exist or incorrect password.'});
 	},
 
 	list: function () {
@@ -153,6 +153,7 @@ module.exports = {
 
 	loginchallenge: function (id) {
 		var user = find(id);
+
 		if (!user) {
 			return resHelper(false, {msg: 'ID not exists.'});
 		}
@@ -167,19 +168,23 @@ module.exports = {
 
 	login: function (id, secret) {
 		var user = findCheckGenToken(id, secret);
+
 		if (user) {
 			return resHelper(true, {id: user.id, token: user.token});
+		} else {
+			return resHelper(false, {msg: 'Login failed.'});
 		}
-		return resHelper(false, {msg: 'Login failed.'});
 	},
 
 	logout: function (id, token) {
 		var user = find(id);
+
 		if (user && user.token && user.token === token) {
 			user.token = '';
 			return resHelper(true);
+		} else {
+			return resHelper(false, {msg: 'Logout failed.'});
 		}
-		return resHelper(false, {msg: 'Logout failed.'});
 	}
 }
 
