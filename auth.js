@@ -54,7 +54,6 @@ function modify(user, newId, newPw) {
 
 function remove(user) {
 	delete users[user.id];
-	console.log(users);
 	saveDB();
 }
 
@@ -86,6 +85,12 @@ function resHelper(result, payload) {
 }
 
 module.exports = {
+
+	reset: function() {
+		users = {};
+		saveDB();
+		return resHelper(true);
+	},
 
 	create: function(id, pw) {
 		if (find(id)) {
