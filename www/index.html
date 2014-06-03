@@ -47,9 +47,9 @@
 
 			if (pw === pw2) {
 				auth.create(id, pw, function (data) {
-					console.log(data)
+					console.log(data);
 				}, function (data) {
-					console.log(data)
+					console.log(data);
 				});
 			} else {
 				console.log('Inconsistent password.');
@@ -70,14 +70,15 @@
 		});
 
 		$('#update-submit').click(function () {
-			var id = $('#update-id')[0].value,
-				pw = $('#update-pw')[0].value,
+			id = $('#update-id')[0].value,
+			var pw = $('#update-pw')[0].value,
 				newId = $('#update-newId')[0].value,
 				newPw = $('#update-newPw')[0].value,
 				newPw2 = $('#update-newPw2')[0].value;
 
 			if (id && pw && newId && newPw && newPw === newPw2) {
 				auth.update(id, pw, newId, newPw, function (data) {
+					id = newId;
 					token = data.token;
 					console.log(data);
 				}, function (data) {
@@ -90,9 +91,9 @@
 		$('#logout-submit').click(function () {
 
 			auth.logout(id, token, function (data) {
-				console.log(data)
+				console.log(data);
 			}, function (data) {
-				console.log(data)
+				console.log(data);
 			});
 		});
 

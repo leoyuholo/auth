@@ -1,7 +1,15 @@
 var expect = chai.expect;
 
 function urlAjax(url, onSuccess, onFail) {
-	$.ajax(url).done(processRes(onSuccess, onFail));
+	$.ajax(url).done(function (res) {
+		if (res.result) {
+			if (onSuccess)
+				onSuccess(res.payload)
+		} else {
+			if (onFail)
+				onFail(res.payload);
+		}
+	});
 }
 
 function reset() {
