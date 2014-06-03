@@ -1,2 +1,4 @@
 node_modules
 userdb.json
+*.sublime-project
+*.sublime-workspace
