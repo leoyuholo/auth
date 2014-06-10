@@ -1,3 +1,5 @@
+// Abstract class of user data store
+
 var crypto = require('crypto'),
 	aes = require('crypto-js/aes');
 

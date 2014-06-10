@@ -1,9 +1,14 @@
-var InMemoryStore = require('./InMemoryStore.js');
+var InMemoryStore = require('./InMemoryStore.js'),
+	RedisStore = require('./RedisStore.js');
 
 module.exports = Auth;
 
 function Auth(config) {
 	var self = this;
+
+	if (config.redis) {
+		self.store = new RedisStore(config.redis);
+	}
 
 	// default
 	if (!self.store) {
