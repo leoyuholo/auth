@@ -1,88 +1,139 @@
 var crypto = require('crypto'),
 	aes = require('crypto-js/aes'),
 	fs = require('fs'),
-	users = {};
+	redis = require('redis'),
+	redisClient = {};
 
-module.exports = {
+module.exports = Auth;
 
-	create: function (id, pw, cb) {
+function Auth(config) {
+	var self = this;
 
-		if (find(id))
-			cbHelper(cb, null, resHelper(false, {msg: 'ID exists.'}));
-		else
-			cbHelper(cb, null, add(id, pw) ? resHelper(true, {id: id}) : resHelper(false));
-	},
+	// default
+	if (!self.store) {
+		self.store = new inMemoryStore({file: './userdb.json'});
+	}
+};
 
-	update: function (id, secret, newId, newPw, cb) {
-		var user = findCheckGenToken(id, secret);
+Auth.prototype.create = function (id, pw, cb) {
+	var self = this;
+
+	self.store.find(id, function (err, user) {
+
+		if (err)	return cbHelper(cb, err);
+
+		if (user)	return cbHelper(cb, null, resHelper(false, {msg: 'ID exists.'}));
+
+		self.store.add(id, pw, function (err, user) {
+
+			if (err)	return cbHelper(cb, err);
+
+			return cbHelper(cb, null, user ? resHelper(true, {id: user.id}) : resHelper(false));
+		});
+	});
+};
+
+Auth.prototype.update = function (id, secret, newId, newPw, cb) {
+	var self = this;
+
+	self.store.findCheckGenToken(id, secret, function (err, user) {
+
+		if (err)	return cbHelper(cb, err);
 
 		if (user) {
-			modify(user, newId, newPw);
-			cbHelper(cb, null, resHelper(true, {id: user.id, token: user.token}));
-		} else {
-			cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
-		}
-	},
 
-	delete: function (id, secret, cb) {
-		var user = findAndCheck(id, secret);
+			self.store.modify(user, newId, newPw, function (err) {
+
+				if (err)	return cbHelper(cb, err);
+
+				return cbHelper(cb, null, resHelper(true, {id: user.id, token: user.token}));
+
+			});
+
+		} else {
+
+			return cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
+
+		}
+	});
+};
+
+Auth.prototype.delete = function (id, secret, cb) {
+	var self = this;
+
+	self.store.findAndCheck(id, secret, function (err, user) {
+
+		if (err)	return cbHelper(cb, err);
 
 		if (user) {
-			remove(user);
-			cbHelper(cb, null, resHelper(true));
+
+			self.store.remove(user, function (err) {
+				return cbHelper(cb, null, resHelper(true));
+			})
 		} else {
-			cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
+
+			return cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
 		}
-	},
+	});
+};
 
-	list: function (cb) {
-		cbHelper(cb, null, list());
-	},
+Auth.prototype.list = function (cb) {
+	var self = this;
 
-	loginchallenge: function (id, cb) {
-		var user = find(id);
+	self.store.list(function (err, list) {
 
-		if (!user) {
-			cbHelper(cb, null, resHelper(false, {msg: 'ID not exists.'}));
-			return;
-		}
+		if (err)	return cbHelper(cb, err);
+
+		return cbHelper(cb, null, list);
+	})
+};
+
+Auth.prototype.loginchallenge = function (id, cb) {
+	var self = this;
+
+	self.store.find(id, function (err, user) {
+
+		if (err)	return cbHelper(cb, err);
+
+		if (!user)	return cbHelper(cb, null, resHelper(false, {msg: 'ID not exists.'}));
 
 		if (!user.challenge) {
+			// TODO: move to store
 			user.secret = Math.random().toString().slice(2);
 			user.challenge = aes.encrypt(user.secret, user.key).toString();
 		}
 
-		cbHelper(cb, null, resHelper(true, {challenge: user.challenge, salt: user.salt}));
-	},
+		return cbHelper(cb, null, resHelper(true, {challenge: user.challenge, salt: user.salt}));
+	})
+};
 
-	login: function (id, secret, cb) {
-		var user = findCheckGenToken(id, secret);
+Auth.prototype.login = function (id, secret, cb) {
+	var self = this;
 
-		if (user) {
-			cbHelper(cb, null, resHelper(true, {id: user.id, token: user.token}));
-		} else {
-			cbHelper(cb, null, resHelper(false, {msg: 'Login failed.'}));
-		}
-	},
+	self.store.findCheckGenToken(id, secret, function (err, user) {
 
-	logout: function (id, token, cb) {
-		var user = find(id);
+		if (err)	return cbHelper(cb, err);
+
+		return cbHelper(cb, null, user ? resHelper(true, {id: user.id, token: user.token}) : resHelper(false, {msg: 'Login failed.'}));
+	});
+
+};
+
+Auth.prototype.logout = function (id, token, cb) {
+	var self = this;
+
+	self.store.find(id, function (err, user) {
+
+		if (err)	return cbHelper(cb, err);
 
 		if (user && user.token && user.token === token) {
+			// TODO: move to store
 			user.token = '';
-			cbHelper(cb, null, resHelper(true));
+			return cbHelper(cb, null, resHelper(true));
 		} else {
-			cbHelper(cb, null, resHelper(false, {msg: 'Logout failed.'}));
+			return cbHelper(cb, null, resHelper(false, {msg: 'Logout failed.'}));
 		}
-	}
-}
-
-function loadDB() {
-
-	fs.readFile('./userdb.json', {encoding: 'utf-8'}, function (err, data) {
-		if (err) throw err;
-		if (data) users = JSON.parse(data);
-	});
+	})
 }
 
 function cbHelper(cb) {
@@ -91,11 +142,40 @@ function cbHelper(cb) {
 	}
 }
 
-function saveDB() {
+function resHelper(result, payload) {
+	var self = this;
+	return {result: result, payload: payload};
+}
+
+function inMemoryStore(config) {
+	var self = this;
+	
+	self.file = config.file;
+
+	self.users = {};
+
+	self.loadDB();
+
+}
+
+inMemoryStore.prototype.loadDB = function () {
+	var self = this;
+
+	fs.readFile(self.file, {encoding: 'utf-8'}, function (err, data) {
+
+		if (err)	return cbHelper(cb, err);
+
+		self.users = data ? JSON.parse(data) : {};
+
+	});
+}
+
+inMemoryStore.prototype.saveDB = function (cb) {
+	var self = this;
 	var data = {};
 
-	for (var id in users) {
-		var user = users[id];
+	for (var id in self.users) {
+		var user = self.users[id];
 		data[user.id] = {
 			id: user.id,
 			key: user.key,
@@ -104,86 +184,119 @@ function saveDB() {
 	}
 
 	fs.writeFile('./userdb.json', JSON.stringify(data), function (err) {
-		if (err) throw err;
+
+		if (err)	return cbHelper(cb, err);
+
+		return cbHelper(cb, null);
 	});
 }
 
-function find(id) {
-	return users[id];
+inMemoryStore.prototype.find = function (id, cb) {
+	var self = this;
+
+	return cbHelper(cb, null, self.users[id]);
 }
 
-function add(id, pw) {
-	var key = genKey(pw);
+inMemoryStore.prototype.add = function (id, pw, cb) {
+	var self = this;
+	var key = self.genKey(pw);
 
-	users[id] = {id: id, key: key.key, salt: key.salt, token: ''};
+	self.users[id] = {id: id, key: key.key, salt: key.salt, token: ''};
 
-	saveDB();
+	self.saveDB(function (err) {
 
-	return true;
+		if (err)	return cbHelper(cb, err);
+
+		return cbHelper(cb, null, self.users[id]);
+	});
 };
 
-function genKey(pw) {
+inMemoryStore.prototype.genKey = function (pw) {
+	var self = this;
 	var salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32),
 		key = crypto.createHash('sha1').update(pw + salt).digest('hex');
 
 	return {key: key, salt: salt};
 }
 
-function modify(user, newId, newPw) {
+inMemoryStore.prototype.modify = function (user, newId, newPw, cb) {
+	var self = this;
 
 	if (newId !== user.id) {
-		delete users[user.id];
+
+		delete self.users[user.id];
+
 		user.id = newId;
-		users[newId] = user
+
+		self.users[newId] = user;
+
 	}
 
-	var key = genKey(newPw);
+	var key = self.genKey(newPw);
 	user.key = key.key;
 	user.salt = key.salt;
 
-	saveDB();
+	self.saveDB(cb);
 };
 
-function remove(user) {
+inMemoryStore.prototype.remove = function (user, cb) {
+	var self = this;
 
-	delete users[user.id];
-	saveDB();
+	delete self.users[user.id];
+
+	self.saveDB(cb);
 }
 
-function list() {
+inMemoryStore.prototype.list = function (cb) {
+	var self = this;
 	var list = [];
 
-	for (id in users) {
-		list.push(users[id]);
+	for (id in self.users) {
+
+		list.push(self.users[id]);
+
 	}
 
-	return list;
+	return cbHelper(cb, null, list);
 };
 
-function findAndCheck(id, secret) {
-	var user = find(id);
+inMemoryStore.prototype.findAndCheck = function (id, secret, cb) {
+	var self = this;
 
-	if (user && user.secret === secret) {
-		user.challenge = '';
-		return user;
-	} else {
-		return false;
-	}
+	self.find(id, function (err, user) {
+
+		if (err)	return cbHelper(cb, err);
+
+		if (user && user.secret === secret) {
+
+			user.challenge = '';
+
+			return cbHelper(cb, null, user);
+		} else {
+
+			return cbHelper(cb, null, null);
+		}	
+	});
 }
 
-function genToken() {
+inMemoryStore.prototype.genToken = function () {
+	var self = this;
+
 	return Math.random().toString().slice(2);
 }
 
-function findCheckGenToken(id, secret) {
-	var user = findAndCheck(id, secret);
+inMemoryStore.prototype.findCheckGenToken = function (id, secret, cb) {
+	var self = this;
+	
+	self.findAndCheck(id, secret, function (err, user) {
 
-	user.token = genToken();
-	return user;
+		if (err)	return cbHelper(cb, err);
+
+		if (user) {
+			user.token = self.genToken();
+			return cbHelper(cb, null, user);
+		} else {
+			return cbHelper(cb, null, null);
+		}
+	});
 }
-
-function resHelper(result, payload) {
-	return {result: result, payload: payload};
-}
-
-loadDB();

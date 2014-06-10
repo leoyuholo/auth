@@ -1,7 +1,8 @@
-var express = require('express'),
+var config = require('./config.json'),
+	express = require('express'),
 	bodyParser = require('body-parser'),
 	path = require('path'),
-	auth = require('./auth.js'),
+	auth = new (require('./auth.js'))(config),
 	app = express(),
 	port = 8080;
 
