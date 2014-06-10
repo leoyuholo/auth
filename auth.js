@@ -5,45 +5,46 @@ var crypto = require('crypto'),
 
 module.exports = {
 
-	create: function (id, pw) {
+	create: function (id, pw, cb) {
 
 		if (find(id))
-			return resHelper(false, {msg: 'ID exists.'});
+			cbHelper(cb, null, resHelper(false, {msg: 'ID exists.'}));
 		else
-			return add(id, pw) ? resHelper(true, {id: id}) : resHelper(false);
+			cbHelper(cb, null, add(id, pw) ? resHelper(true, {id: id}) : resHelper(false));
 	},
 
-	update: function (id, secret, newId, newPw) {
+	update: function (id, secret, newId, newPw, cb) {
 		var user = findCheckGenToken(id, secret);
 
 		if (user) {
 			modify(user, newId, newPw);
-			return resHelper(true, {id: user.id, token: user.token});
+			cbHelper(cb, null, resHelper(true, {id: user.id, token: user.token}));
 		} else {
-			return resHelper(false, {msg: 'User not exist or incorrect password.'});
+			cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
 		}
 	},
 
-	delete: function (id, secret) {
+	delete: function (id, secret, cb) {
 		var user = findAndCheck(id, secret);
 
 		if (user) {
 			remove(user);
-			return resHelper(true);
+			cbHelper(cb, null, resHelper(true));
 		} else {
-			return resHelper(false, {msg: 'User not exist or incorrect password.'});
+			cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
 		}
 	},
 
-	list: function () {
-		return list();
+	list: function (cb) {
+		cbHelper(cb, null, list());
 	},
 
-	loginchallenge: function (id) {
+	loginchallenge: function (id, cb) {
 		var user = find(id);
 
 		if (!user) {
-			return resHelper(false, {msg: 'ID not exists.'});
+			cbHelper(cb, null, resHelper(false, {msg: 'ID not exists.'}));
+			return;
 		}
 
 		if (!user.challenge) {
@@ -51,27 +52,27 @@ module.exports = {
 			user.challenge = aes.encrypt(user.secret, user.key).toString();
 		}
 
-		return resHelper(true, {challenge: user.challenge, salt: user.salt});
+		cbHelper(cb, null, resHelper(true, {challenge: user.challenge, salt: user.salt}));
 	},
 
-	login: function (id, secret) {
+	login: function (id, secret, cb) {
 		var user = findCheckGenToken(id, secret);
 
 		if (user) {
-			return resHelper(true, {id: user.id, token: user.token});
+			cbHelper(cb, null, resHelper(true, {id: user.id, token: user.token}));
 		} else {
-			return resHelper(false, {msg: 'Login failed.'});
+			cbHelper(cb, null, resHelper(false, {msg: 'Login failed.'}));
 		}
 	},
 
-	logout: function (id, token) {
+	logout: function (id, token, cb) {
 		var user = find(id);
 
 		if (user && user.token && user.token === token) {
 			user.token = '';
-			return resHelper(true);
+			cbHelper(cb, null, resHelper(true));
 		} else {
-			return resHelper(false, {msg: 'Logout failed.'});
+			cbHelper(cb, null, resHelper(false, {msg: 'Logout failed.'}));
 		}
 	}
 }
@@ -82,6 +83,12 @@ function loadDB() {
 		if (err) throw err;
 		if (data) users = JSON.parse(data);
 	});
+}
+
+function cbHelper(cb) {
+	if (cb) {
+		cb.apply(this, Array.prototype.slice.call(arguments, 1));
+	}
 }
 
 function saveDB() {
