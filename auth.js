@@ -1,7 +1,6 @@
 var crypto = require('crypto'),
 	aes = require('crypto-js/aes'),
-	fs = require('fs'),
-	redisClient = {};
+	fs = require('fs');
 
 module.exports = Auth;
 
@@ -136,7 +135,7 @@ Auth.prototype.logout = function (id, token, cb) {
 }
 
 function resHelper(result, payload) {
-	
+
 	return {result: result, payload: payload};
 }
 
