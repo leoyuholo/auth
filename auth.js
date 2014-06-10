@@ -19,15 +19,15 @@ Auth.prototype.create = function (id, pw, cb) {
 
 	self.store.find(id, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
-		if (user)	return cbHelper(cb, null, resHelper(false, {msg: 'ID exists.'}));
+		if (user)	return cb(null, resHelper(false, {msg: 'ID exists.'}));
 
 		self.store.add(id, pw, function (err, user) {
 
-			if (err)	return cbHelper(cb, err);
+			if (err)	return cb(err);
 
-			return cbHelper(cb, null, user ? resHelper(true, {id: user.id}) : resHelper(false));
+			return cb(null, user ? resHelper(true, {id: user.id}) : resHelper(false));
 		});
 	});
 };
@@ -37,21 +37,21 @@ Auth.prototype.update = function (id, secret, newId, newPw, cb) {
 
 	self.store.findCheckGenToken(id, secret, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
 		if (user) {
 
 			self.store.modify(user, newId, newPw, function (err) {
 
-				if (err)	return cbHelper(cb, err);
+				if (err)	return cb(err);
 
-				return cbHelper(cb, null, resHelper(true, {id: user.id, token: user.token}));
+				return cb(null, resHelper(true, {id: user.id, token: user.token}));
 
 			});
 
 		} else {
 
-			return cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
+			return cb(null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
 
 		}
 	});
@@ -62,16 +62,16 @@ Auth.prototype.delete = function (id, secret, cb) {
 
 	self.store.findAndCheck(id, secret, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
 		if (user) {
 
 			self.store.remove(user, function (err) {
-				return cbHelper(cb, null, resHelper(true));
+				return cb(null, resHelper(true));
 			})
 		} else {
 
-			return cbHelper(cb, null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
+			return cb(null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
 		}
 	});
 };
@@ -81,9 +81,9 @@ Auth.prototype.list = function (cb) {
 
 	self.store.list(function (err, list) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
-		return cbHelper(cb, null, list);
+		return cb(null, list);
 	})
 };
 
@@ -92,9 +92,9 @@ Auth.prototype.loginchallenge = function (id, cb) {
 
 	self.store.find(id, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
-		if (!user)	return cbHelper(cb, null, resHelper(false, {msg: 'ID not exists.'}));
+		if (!user)	return cb(null, resHelper(false, {msg: 'ID not exists.'}));
 
 		if (!user.challenge) {
 			// TODO: move to store
@@ -102,7 +102,7 @@ Auth.prototype.loginchallenge = function (id, cb) {
 			user.challenge = aes.encrypt(user.secret, user.key).toString();
 		}
 
-		return cbHelper(cb, null, resHelper(true, {challenge: user.challenge, salt: user.salt}));
+		return cb(null, resHelper(true, {challenge: user.challenge, salt: user.salt}));
 	})
 };
 
@@ -111,9 +111,9 @@ Auth.prototype.login = function (id, secret, cb) {
 
 	self.store.findCheckGenToken(id, secret, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
-		return cbHelper(cb, null, user ? resHelper(true, {id: user.id, token: user.token}) : resHelper(false, {msg: 'Login failed.'}));
+		return cb(null, user ? resHelper(true, {id: user.id, token: user.token}) : resHelper(false, {msg: 'Login failed.'}));
 	});
 
 };
@@ -123,26 +123,20 @@ Auth.prototype.logout = function (id, token, cb) {
 
 	self.store.find(id, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
 		if (user && user.token && user.token === token) {
 			// TODO: move to store
 			user.token = '';
-			return cbHelper(cb, null, resHelper(true));
+			return cb(null, resHelper(true));
 		} else {
-			return cbHelper(cb, null, resHelper(false, {msg: 'Logout failed.'}));
+			return cb(null, resHelper(false, {msg: 'Logout failed.'}));
 		}
 	})
 }
 
-function cbHelper(cb) {
-	if (cb) {
-		cb.apply(this, Array.prototype.slice.call(arguments, 1));
-	}
-}
-
 function resHelper(result, payload) {
-	var self = this;
+	
 	return {result: result, payload: payload};
 }
 
@@ -162,7 +156,7 @@ inMemoryStore.prototype.loadDB = function () {
 
 	fs.readFile(self.file, {encoding: 'utf-8'}, function (err, data) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
 		self.users = data ? JSON.parse(data) : {};
 
@@ -184,16 +178,16 @@ inMemoryStore.prototype.saveDB = function (cb) {
 
 	fs.writeFile('./userdb.json', JSON.stringify(data), function (err) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
-		return cbHelper(cb, null);
+		return cb(null);
 	});
 }
 
 inMemoryStore.prototype.find = function (id, cb) {
 	var self = this;
 
-	return cbHelper(cb, null, self.users[id]);
+	return cb(null, self.users[id]);
 }
 
 inMemoryStore.prototype.add = function (id, pw, cb) {
@@ -204,9 +198,9 @@ inMemoryStore.prototype.add = function (id, pw, cb) {
 
 	self.saveDB(function (err) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
-		return cbHelper(cb, null, self.users[id]);
+		return cb(null, self.users[id]);
 	});
 };
 
@@ -256,7 +250,7 @@ inMemoryStore.prototype.list = function (cb) {
 
 	}
 
-	return cbHelper(cb, null, list);
+	return cb(null, list);
 };
 
 inMemoryStore.prototype.findAndCheck = function (id, secret, cb) {
@@ -264,16 +258,16 @@ inMemoryStore.prototype.findAndCheck = function (id, secret, cb) {
 
 	self.find(id, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
 		if (user && user.secret === secret) {
 
 			user.challenge = '';
 
-			return cbHelper(cb, null, user);
+			return cb(null, user);
 		} else {
 
-			return cbHelper(cb, null, null);
+			return cb(null, null);
 		}	
 	});
 }
@@ -289,13 +283,13 @@ inMemoryStore.prototype.findCheckGenToken = function (id, secret, cb) {
 	
 	self.findAndCheck(id, secret, function (err, user) {
 
-		if (err)	return cbHelper(cb, err);
+		if (err)	return cb(err);
 
 		if (user) {
 			user.token = self.genToken();
-			return cbHelper(cb, null, user);
+			return cb(null, user);
 		} else {
-			return cbHelper(cb, null, null);
+			return cb(null, null);
 		}
 	});
 }
