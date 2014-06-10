@@ -10,9 +10,6 @@ app.use(express.static(path.join(__dirname + '/www')));
 
 if ('development' === app.settings.env) {
 	app.use('/test', express.static(path.join(__dirname + '/test')));
-	app.get('/reset', function (req, res) {
-		res.send(auth.reset());
-	});
 }
 
 app.get('/list', function (req, res) {

@@ -5,14 +5,6 @@ var crypto = require('crypto'),
 
 module.exports = {
 
-	reset: function () {
-
-		users = {};
-		saveDB();
-
-		return resHelper(true);
-	},
-
 	create: function (id, pw) {
 
 		if (find(id))
