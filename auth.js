@@ -104,17 +104,10 @@ Auth.prototype.loginchallenge = function (id, cb) {
 
 		if (!user)	return cb(null, resHelper(false, {msg: 'ID not exists.'}));
 
-		if (!user.challenge) {
+		self.store.getChallenge(user, function (err, salt, challenge) {
 
-			self.store.genChallenge(user, function (err, user) {
-
-				return cb(null, resHelper(true, {challenge: user.challenge, salt: user.salt}));
-			});
-			
-		} else {
-
-			return cb(null, resHelper(true, {challenge: user.challenge, salt: user.salt}));
-		}
+			return cb(null, resHelper(true, {salt: salt, challenge: challenge}));
+		});
 
 	});
 

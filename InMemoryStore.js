@@ -144,16 +144,31 @@ InMemoryStore.prototype.findAndCheck = function (id, secret, cb) {
 
 };
 
-InMemoryStore.prototype.genChallenge = function (user, cb) {
+InMemoryStore.prototype.getChallenge = function (user, cb) {
+	var self = this;
 
-	user.secret = Math.random().toString().slice(2);
-	user.challenge = aes.encrypt(user.secret, user.key).toString();
+	if (!user.challenge) {
+		var challenge = self.genChallenge(user.key);
 
-	return cb(null, user);
+		user.secret = challenge.secret;
+		user.challenge = challenge.challenge;
+
+	}
+
+	return cb(null, user.salt, user.challenge);
+}
+
+InMemoryStore.prototype.genChallenge = function (key) {
+	var secret = Math.random().toString().slice(2),
+		challenge = aes.encrypt(secret, key).toString();
+
+	return {
+		secret: secret,
+		challenge: challenge
+	};
 };
 
 InMemoryStore.prototype.genToken = function () {
-	var self = this;
 
 	return Math.random().toString().slice(2);
 };
