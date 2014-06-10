@@ -1,7 +1,6 @@
 var crypto = require('crypto'),
 	aes = require('crypto-js/aes'),
 	fs = require('fs'),
-	redis = require('redis'),
 	redisClient = {};
 
 module.exports = Auth;
