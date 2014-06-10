@@ -6,6 +6,7 @@
 	"dependencies": {
 		"express": "latest",
 		"body-parser": "latest",
-		"crypto-js": "latest"
+		"crypto-js": "latest",
+		"redis": "latest"
 	}
 }
