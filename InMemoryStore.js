@@ -1,8 +1,10 @@
-var crypto = require('crypto'),
-	aes = require('crypto-js/aes'),
+var UserStore = require('./UserStore.js'),
+	inherits = require('util').inherits,
 	fs = require('fs');
 
 module.exports = InMemoryStore;
+
+inherits(InMemoryStore, UserStore);
 
 function InMemoryStore(config) {
 	var self = this;
@@ -71,14 +73,6 @@ InMemoryStore.prototype.add = function (id, pw, cb) {
 		return cb(null, self.users[id]);
 	});
 
-};
-
-InMemoryStore.prototype.genKey = function (pw) {
-	var self = this;
-	var salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32),
-		key = crypto.createHash('sha1').update(pw + salt).digest('hex');
-
-	return {key: key, salt: salt};
 };
 
 InMemoryStore.prototype.modify = function (user, newId, newPw, cb) {
@@ -156,21 +150,6 @@ InMemoryStore.prototype.getChallenge = function (user, cb) {
 	}
 
 	return cb(null, user.salt, user.challenge);
-}
-
-InMemoryStore.prototype.genChallenge = function (key) {
-	var secret = Math.random().toString().slice(2),
-		challenge = aes.encrypt(secret, key).toString();
-
-	return {
-		secret: secret,
-		challenge: challenge
-	};
-};
-
-InMemoryStore.prototype.genToken = function () {
-
-	return Math.random().toString().slice(2);
 };
 
 InMemoryStore.prototype.clearToken = function (user, cb) {
