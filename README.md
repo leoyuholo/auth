@@ -1,3 +1,4 @@
+#auth
 A simple Node.js challenge-response authentication example with the use of AES and SHA1
 
 #How to run
