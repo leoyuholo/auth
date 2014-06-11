@@ -1,5 +1,6 @@
 var InMemoryStore = require('./InMemoryStore.js'),
-	RedisStore = require('./RedisStore.js');
+	RedisStore = require('./RedisStore.js'),
+	PostgreStore = require('./PostgreStore.js');
 
 module.exports = Auth;
 
@@ -9,6 +10,10 @@ function Auth(config) {
 	if (config.redis) {
 
 		self.store = new RedisStore(config.redis);
+
+	} else if (config.postgre) {
+
+		self.store = new PostgreStore(config.postgre);
 
 	}
 
