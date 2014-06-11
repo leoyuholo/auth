@@ -17,6 +17,13 @@ function RedisStore(config) {
 
 }
 
+RedisStore.prototype.destroy = function () {
+	var self = this;
+
+	self.client.quit();
+
+};
+
 RedisStore.prototype.makeKey = function (id) {
 
 	return 'user:' + id;
