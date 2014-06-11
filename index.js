@@ -13,12 +13,6 @@ if ('development' === app.settings.env) {
 	app.use('/test', express.static(path.join(__dirname + '/test')));
 }
 
-app.get('/list', function (req, res) {
-	auth.list(function (err, obj) {
-		res.send(obj);
-	});
-});
-
 app.post('/create', function (req, res) {
 	auth.create(req.param('id'), req.param('pw'), function (err, obj) {
 		res.send(obj);
