@@ -64,9 +64,10 @@
 				aesKey = sha1(sha1(pw) + data.salt);
 
 			try {
-				secret = aesDecrypt(data.challenge, aesKey).toString(CryptoJS.enc.Utf8);
+				secret = aesDecrypt(data.challenge, aesKey);
+
 			} catch (err) {
-				onFail({msg: 'Incorrect password.'});
+				return onFail({msg: 'Incorrect password.'});
 			}
 
 			onSuccess(secret);
@@ -74,11 +75,11 @@
 	}
 
 	function sha1(data) {
-		return CryptoJS.SHA1(data).toString();
+		return CryptoJS.SHA1(data).toString(CryptoJS.enc.Base64);
 	}
 
 	function aesDecrypt(input, key) {
-		return CryptoJS.AES.decrypt(input, key);
+		return CryptoJS.AES.decrypt(input, key).toString(CryptoJS.enc.Utf8);
 	}
 
 	function processRes(onSuccess, onFail) {

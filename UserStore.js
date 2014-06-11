@@ -52,6 +52,8 @@ UserStore.prototype.modify = function (user, newId, newPw, cb) {
 	var key = self.genKey(newPw);
 	user.key = key.key;
 	user.salt = key.salt;
+	user.secret = '';
+	user.challenge = '';
 
 	if (newId !== user.id) {
 
@@ -70,6 +72,7 @@ UserStore.prototype.modify = function (user, newId, newPw, cb) {
 		self.setUser(user, cb);
 
 	}
+
 };
 
 UserStore.prototype.remove = function (user, cb) {
@@ -168,7 +171,7 @@ UserStore.prototype.clearToken = function (user, cb) {
 
 UserStore.prototype.genKey = function (pw) {
 	var salt = (Math.random().toString().slice(2) + '00000000000000000000000000000000').slice(0, 32),
-		key = crypto.createHash('sha1').update(pw + salt).digest('hex');
+		key = crypto.createHash('sha1').update(pw + salt).digest('base64');
 
 	return {key: key, salt: salt};
 };

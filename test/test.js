@@ -71,7 +71,8 @@ describe('auth', function () {
 
 		reset();
 
-		var user = userPool[0];
+		var user = userPool[0],
+			user1 = userPool[1];
 
 		it('should create id "alice" for later deletion', function (done) {
 			auth.create(user.id, user.pw, function (data) {
@@ -85,6 +86,26 @@ describe('auth', function () {
 
 		it('should success and return id', function (done) {
 			auth.delete(user.id, user.pw, function (data) {
+				expect('this callback should be called').to.be.ok;
+				return done();
+			}, function (data) {
+				expect('this callback should not be called').to.be.not.ok;
+				return done();
+			});
+		});
+
+		it('should create id "bob" for later deletion', function (done) {
+			auth.create(user1.id, user1.pw, function (data) {
+				expect(data.id).to.equal(user1.id);
+				return done();
+			}, function (data) {
+				expect('this callback should not be called').to.be.not.ok;
+				return done();
+			});
+		});
+
+		it('should success and return id', function (done) {
+			auth.delete(user1.id, user1.pw, function (data) {
 				expect('this callback should be called').to.be.ok;
 				return done();
 			}, function (data) {

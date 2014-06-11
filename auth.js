@@ -7,7 +7,9 @@ function Auth(config) {
 	var self = this;
 
 	if (config.redis) {
+
 		self.store = new RedisStore(config.redis);
+
 	}
 
 	// default
@@ -48,14 +50,28 @@ Auth.prototype.update = function (id, secret, newId, newPw, cb) {
 
 		if (user) {
 
-			self.store.modify(user, newId, newPw, function (err) {
+			self.store.find(newId, function (err, existingUser) {
 
 				if (err)	return cb(err);
 
-				return cb(null, resHelper(true, {id: user.id, token: user.token}));
+				if (existingUser) {
+
+					return cb(null, resHelper(false, {msg: 'New ID not available.'}));
+
+				} else {
+
+					self.store.modify(user, newId, newPw, function (err) {
+
+						if (err)	return cb(err);
+
+						return cb(null, resHelper(true, {id: user.id, token: user.token}));
+
+					});
+
+				}
 
 			});
-
+			
 		} else {
 
 			return cb(null, resHelper(false, {msg: 'User not exist or incorrect password.'}));
