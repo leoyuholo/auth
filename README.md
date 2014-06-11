@@ -24,3 +24,15 @@ Create config.json in project directory, define redis endpoint in config.json, l
 	}
 }
 ```
+
+##PostgreSQL datastore
+Same as Redis datastore,
+
+Create config.json in project directory, define PostgreSQL endpoint in config.json, like:
+```
+{
+	"postgre": {
+		"url": "tcp://user:pw@localhost/db"
+	}
+}
+```
