@@ -1,23 +1,20 @@
 var expect = chai.expect;
 
-function urlAjax(url, onSuccess, onFail) {
-	$.ajax(url).done(function (res) {
-		if (res.result) {
-			if (onSuccess)
-				onSuccess(res.payload)
-		} else {
-			if (onFail)
-				onFail(res.payload);
-		}
-	});
-}
+var userPool = [
+	{id: 'alice', pw: '1234'}, 
+	{id: 'bob', pw: 'ABCD'}
+];
 
 function reset() {
 
 	before(function (done) {
-		urlAjax('/reset', done, function () {
-			expect('this callback should not be called').to.be.not.ok;
-			return done();
+		var cnt = 0,
+			cleanUp = function () {
+				cnt++;
+				if (cnt == userPool.length)	done();
+			};
+		userPool.forEach(function (user, index) {
+			auth.delete(user.id, user.pw, cleanUp, cleanUp);
 		});
 	});
 }
@@ -28,12 +25,11 @@ describe('auth', function () {
 
 		reset();
 		
-		var id = 'alice',
-			pw = '1234';
+		var user = userPool[0];
 
 		it('should success and return id', function (done) {
-			auth.create(id, pw, function (data) {
-				expect(data.id).to.equal(id);
+			auth.create(user.id, user.pw, function (data) {
+				expect(data.id).to.equal(user.id);
 				return done();
 			}, function (data) {
 				expect('this callback should not be called').to.be.not.ok;
@@ -46,14 +42,12 @@ describe('auth', function () {
 
 		reset();
 
-		var id = 'alice',
-			pw = '1234',
-			newId = 'bob',
-			newPw = 'ABCD';
+		var user = userPool[0],
+			newUser = userPool[1];
 
 		it('should create id "alice" for later modification', function (done) {
-			auth.create(id, pw, function (data) {
-				expect(data.id).to.equal(id);
+			auth.create(user.id, user.pw, function (data) {
+				expect(data.id).to.equal(user.id);
 				return done();
 			}, function (data) {
 				expect('this callback should not be called').to.be.not.ok;
@@ -62,8 +56,8 @@ describe('auth', function () {
 		});
 	
 		it('should success and return newId and token', function (done) {
-			auth.update(id, pw, newId, newPw, function (data) {
-				expect(data.id).to.equal(newId);
+			auth.update(user.id, user.pw, newUser.id, newUser.pw, function (data) {
+				expect(data.id).to.equal(newUser.id);
 				expect(data.token).to.be.a('string');
 				return done();
 			}, function (data) {
@@ -77,12 +71,11 @@ describe('auth', function () {
 
 		reset();
 
-		var id = 'alice',
-			pw = '1234';
+		var user = userPool[0];
 
 		it('should create id "alice" for later deletion', function (done) {
-			auth.create(id, pw, function (data) {
-				expect(data.id).to.equal(id);
+			auth.create(user.id, user.pw, function (data) {
+				expect(data.id).to.equal(user.id);
 				return done();
 			}, function (data) {
 				expect('this callback should not be called').to.be.not.ok;
@@ -91,7 +84,7 @@ describe('auth', function () {
 		});
 
 		it('should success and return id', function (done) {
-			auth.delete(id, pw, function (data) {
+			auth.delete(user.id, user.pw, function (data) {
 				expect('this callback should be called').to.be.ok;
 				return done();
 			}, function (data) {
@@ -105,12 +98,11 @@ describe('auth', function () {
 
 		reset();
 
-		var id = 'alice',
-			pw = '1234';
+		var user = userPool[0];
 
 		it('should create id "alice" for later login', function (done) {
-			auth.create(id, pw, function (data) {
-				expect(data.id).to.equal(id);
+			auth.create(user.id, user.pw, function (data) {
+				expect(data.id).to.equal(user.id);
 				return done();
 			}, function (data) {
 				expect('this callback should not be called').to.be.not.ok;
@@ -119,8 +111,8 @@ describe('auth', function () {
 		});
 
 		it('should sign in and return id and token', function (done) {
-			auth.login(id, pw, function (data) {
-				expect(data.id).to.equal(id);
+			auth.login(user.id, user.pw, function (data) {
+				expect(data.id).to.equal(user.id);
 				expect(data.token).to.be.a('string');
 				return done();
 			}, function (data) {
@@ -134,13 +126,12 @@ describe('auth', function () {
 
 		reset();
 
-		var id = 'alice',
-			pw = '1234',
+		var user = userPool[0],
 			token = '';
 
 		it('should create id "alice" for later login/logout', function (done) {
-			auth.create(id, pw, function (data) {
-				expect(data.id).to.equal(id);
+			auth.create(user.id, user.pw, function (data) {
+				expect(data.id).to.equal(user.id);
 				return done();
 			}, function (data) {
 				expect('this callback should not be called').to.be.not.ok;
@@ -149,8 +140,8 @@ describe('auth', function () {
 		});
 
 		it('should sign in and return id and token', function (done) {
-			auth.login(id, pw, function (data) {
-				expect(data.id).to.equal(id);
+			auth.login(user.id, user.pw, function (data) {
+				expect(data.id).to.equal(user.id);
 				expect(data.token).to.be.a('string');
 				token = data.token;
 				return done();
@@ -161,7 +152,7 @@ describe('auth', function () {
 		});
 
 		it('should sign out and return empty', function (done) {
-			auth.logout(id, token, function (data) {
+			auth.logout(user.id, token, function (data) {
 				expect(data).to.be.an('undefined');
 				return done();
 			}, function (data) {
