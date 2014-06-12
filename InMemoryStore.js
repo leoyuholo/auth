@@ -22,9 +22,15 @@ InMemoryStore.prototype.loadDB = function () {
 
 	fs.readFile(self.file, {encoding: 'utf-8'}, function (err, data) {
 
-		if (err)	return cb(err);
+		if (err) {
 
-		self.users = data ? JSON.parse(data) : {};
+			self.users = {};
+
+		} else {
+
+			self.users = data ? JSON.parse(data) : {};
+
+		}
 
 	});
 
