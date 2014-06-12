@@ -2,7 +2,7 @@
 A Node.js challenge-response authentication example with the use of AES and SHA1
 
 #How to run
-After installed [Node.js] (http://nodejs.org/), go to project directory and run
+After installed [Node.js](http://nodejs.org/), go to project directory and run
 ```
 npm install
 node index.js
@@ -36,3 +36,8 @@ Create config.json in project directory, define PostgreSQL endpoint in config.js
 	}
 }
 ```
+Beware of the installation of npm module [pg](https://github.com/brianc/node-postgres) requires extra dependencies,
+```
+sudo apt-get install libpq-dev build-essential
+```
+read the installation [guide](https://github.com/brianc/node-postgres/wiki/Installation#ubuntu)
