@@ -4,7 +4,7 @@ var config = require('./config.json'),
 	path = require('path'),
 	auth = new (require('./auth.js'))(config),
 	app = express(),
-	port = 8080;
+	port = config.server.port;
 
 app.use(bodyParser());
 app.use(express.static(path.join(__dirname + '/www')));
