@@ -9,6 +9,10 @@ function UserStore(config) {
 
 }
 
+UserStore.prototype.destroy = function() {
+	
+};
+
 UserStore.prototype.setUser = function (user, cb) {
 
 };
@@ -91,7 +95,8 @@ UserStore.prototype.findAndCheck = function (id, secret, cb) {
 
 		if (user && user.secret === secret) {
 
-			user.getChallenge = '';
+			user.secret = '';
+			user.challenge = '';
 
 			self.setUser(user, function (err, reply) {
 
